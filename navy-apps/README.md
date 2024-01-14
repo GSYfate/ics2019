@@ -1,5 +1,82 @@
 # Navy Application Framework
 
+Compile the entire framework using `make ISA=xxx`. When switching ISA, you need to run `make clean`. The default ISA is native, which compiles to a locally executable binary.
+
+After the framework is successfully compiled, the `fsimg/` directory will contain the image of the initial file system.
+
+```
+bin/ -- Binary files
+etc/ -- Configuration files
+  init -- The first program loaded after the system starts
+share/ -- Platform-independent files
+  fonts/ -- Font files
+  games/ -- Game data
+    nes/ -- NES Roms
+    pal/ -- Data files related to Chinese Paladin
+```
+
+## Supported ISA/Operating Systems
+
+### native (Compile for local Linux execution)
+
+When compiling locally, do not link libc and libos; use the local glibc/glibstdc++ (link with g++ without parameters).
+
+`LD_PRELOAD` is used to simulate local `/dev/events`, `/dev/fb`, and other device files (must be opened using fopen in ANSI C). Additionally, it can simulate the behavior of nwm. The project has implemented a simulated environment compatible with Nanos, run native programs using the following command:
+
+`make run argument1 argument2 …`
+
+### x86 (i386, Nanos)
+
+TBD: Static/Dynamic Linking?
+
+### mips32 (Little-endian mips32, Nanos)
+
+TBD: Static/Dynamic Linking?
+
+## Runtime Libraries
+
+C runtime library: newlib 1.6.1
+
+C++ runtime library: Minimal hand-written runtime library. (TODO) Add runtime, global initialization, etc.
+
+## Application Development Guide
+
+### ANSI C Applications
+
+In principle, ANSI C programs can be compiled and run directly. `stdin` can read input, and `stdout`, `stderr` can accept output.
+
+#### Terminal Applications
+
+Outputting character sequences to `stdout`, `stderr` will display them on the terminal, accepting ANSI escape sequences (`#` represents numbers):
+
+* `\033[s`: Save cursor state
+* `\033[u`: Restore the last saved cursor state
+* `\033[J`/`\033[2J`: Clear the screen
+* `\033[K`: Clear characters from the cursor to the end of the line (including the character at the cursor)
+* `\033[#;#H`/`\033[#;#f]`: Move the cursor to the specified row/column (rows/columns start from 1). `\033[H`/`\033[f` moves the cursor to the top-left corner.
+* `\033[#A`: Move the cursor up by a number of lines.
+* `\033[#B`: Move the cursor down by a number of lines.
+* `\033[#C`: Move the cursor right by a number of columns.
+* `\033[#D`: Move the cursor left by a number of columns.
+* `\033[#;#;...;#m`: Set display mode. Only partial support for ANSI escape sequences is provided.
+
+nterm-specific:
+
+* `\033[1t`: cookmode
+* `\033[2t`: rawmode
+
+#### NWM Graphics Programs
+
+Graphic applications created by nwm can find out the width and height of their drawing area through environment variables `WIDTH` and `HEIGHT`.
+
+nwm and applications communicate via pipes. Reading `stdin` will yield events consistent with the format of `/dev/events` (including keypress and timer events sent to this process). Writing the following format of escape sequences to `stdout` implements drawing effects:
+
+* `\033[X@x;@ys` (set): Set screen width to `@x` pixels, height to `@y` pixels.
+* `\033[X@x;@y;@px1;@px2;...d` (draw): Move the cursor to column `@x`, row `@y`, then start drawing pixels one by one (`@px1`, `@px2`, …, until `X` is encountered). Each pixel is four consecutive bytes, representing an integer stored in little-endian `00rrggbb ` (the first byte is bb, the second is gg`, and so on). The top-left pixel is (0, 0). This representation is currently inefficient and is likely to be changed into several escape sequences responsible for cursor control, palette control, and pixel drawing.
+
+
+# Navy Application Framework
+
 使用`make ISA=xxx`编译整个框架。更换ISA时需要`make clean`。默认ISA=native，编译到本地可执行的二进制文件。
 
 框架编译成功后，`fsimg/`目录会包含初始文件系统的镜像。

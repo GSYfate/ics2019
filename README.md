@@ -1,9 +1,9 @@
-# ICS2019 Programming Assignment
+# RISC-V 32 System Emulator NEMU
+Designed a riscv32 instruction set to implement numerous functionalities and facilitate floating-point arithmetic.
 
-This project is the programming assignment of the class ICS(Introduction to Computer System) in Department of Computer Science and Technology, Nanjing University.
+Established a batch operating system that supports interrupt and exception management, a file system, the loading of user applications, the initiation of system calls, and the execution of audio and video programs.
 
-For the guide of this programming assignment,
-refer to http://nju-ics.gitbooks.io/ics2019-programming-assignment/content/
+Implemented a multi-programming system that allows virtual memory management and runs 20+ games without hiccups
 
 To initialize, run
 ```bash
